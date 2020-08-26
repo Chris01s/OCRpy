@@ -90,7 +90,7 @@ class MaxVariance(CleanImg):
 			elif self.angle < -90:
 				self.angle += 90
 			elif self.angle < -45:
-				self.angle = (90 + self.angle)
+				self.angle += 90
 			elif self.angle > 45:
 				self.angle -= 45
 			elif self.angle > 90:
