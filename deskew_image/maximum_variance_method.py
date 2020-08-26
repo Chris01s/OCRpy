@@ -124,7 +124,7 @@ if __name__=="__main__":
 	
 	max_var_obj.adaptive_method()
 	max_var_obj.rotate_image()
-	max_var_obj.resize_image()
+	#max_var_obj.resize_image()
 	
 	try:
 		text = pytesseract.image_to_string(max_var_obj.new_image)
