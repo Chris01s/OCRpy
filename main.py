@@ -50,10 +50,9 @@ if __name__=="__main__":
 		else:
 			print("[-] The pdf is empty, possibly scanned...")
 			print("[*] Performing OCR extraction...")
-			
+			##TODO: add OCR pipeline
 		
 
-	
 	
 
 	
