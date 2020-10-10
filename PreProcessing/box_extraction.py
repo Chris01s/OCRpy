@@ -43,6 +43,19 @@ class BoxExtraction(System, CleanImg):
 		print("[+] Combined Line image created...")
 		return img_final_bin
 	
+
+	def build_final_lines_image(self, filepath):
+		self.image = cv2.imread(filepath)
+		image_inverted = self.invert_image(self.image)
+		
+		hori_kernel, vert_kernel = self.build_kernels(
+			kernel_length_horizontal = 50,
+			kernel_length_verticle = 40
+		)
+		horizontal_lines_img = self.line_image(image_inverted, hori_kernel, "horizontal_line_image")
+		vertical_lines_img = self.line_image(image_inverted, vert_kernel, "vertical_line_image")
+		return self.final_lines_image(vertical_lines_img, horizontal_lines_img)
+	
 	
 	def integrate_image_over_x_axis(self, image):
 		return np.sum(image, axis=1)
@@ -64,14 +77,15 @@ class BoxExtraction(System, CleanImg):
 		return img_slice
 		
 		
-	def slice_image_by_horizontal_lines(self, image, filepath):
+	def slice_image_by_horizontal_lines(self, filepath):
+		img_final_bin = self.build_final_lines_image(filepath)
 		try:
 			horizontal_image = cv2.imread("horizontal_line_image.jpg", 0)
 		except Exception as ex: 
 			print(f"[!!] Problem reading horizontal line image...: {ex.__str__()}")
 		else:
-			crop_folder = ''.join(filepath.split(".")[:-1]) + "_crop_folders"
-			self.create_folders_if_not_exist(crop_folder)
+			self.cropped_dir_path = ''.join(filepath.split(".")[:-1]) + "_horizontal_slice_imgs"
+			self.create_folders_if_not_exist(self.cropped_dir_path)
 
 			x_sum = self.integrate_image_over_x_axis(horizontal_image)
 			x_sum_maxima_mask = self.get_local_maxima(x_sum)
@@ -80,31 +94,25 @@ class BoxExtraction(System, CleanImg):
 			print(f"[*] Cropping {filepath} image on horizontal lines...")
 			for n, i in enumerate(x_sum_maxima_mask):
 				self.update_progress("Slicing image", n, len(x_sum_maxima_mask))
-				img_slice = self.take_img_slice(x_sum_maxima_mask, image, n)
+				img_slice = self.take_img_slice(x_sum_maxima_mask, self.image, n)
 				##save image slice
-				crop_img_filename = os.path.join(crop_folder, "crop_{}.jpg".format(n))
+				crop_img_filename = os.path.join(self.cropped_dir_path, "slice_{}.jpg".format(n))
 				cv2.imwrite(crop_img_filename, img_slice)
-
-   	
-	def box_extraction(self, filepath, cropped_dir_path):
-		image = cv2.imread(filepath)
-		image_inverted = self.invert_image(image)
-		
-		hori_kernel, vert_kernel = self.build_kernels(
-			kernel_length_horizontal = 50,
-			kernel_length_verticle = 40
-		)
-		horizontal_lines_img = self.line_image(image_inverted, hori_kernel, "horizontal_line_image")
-		vertical_lines_img = self.line_image(image_inverted, vert_kernel, "vertical_line_image")
-		img_final_bin = self.final_lines_image(vertical_lines_img, horizontal_lines_img)
-		
+	
+	def crop_img_with_box_extraction(self, filepath):
+		print("[*] Performing collision detection...")
+		img_final_bin = self.build_final_lines_image(filepath)
 		cnts = cv2.findContours(img_final_bin, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 		cnts = imutils.grab_contours(cnts)
-		  
+		
+		self.cropped_dir_path = ''.join(filepath.split(".")[:-1]) + "_box_cropped_imgs"
+		self.create_folders_if_not_exist(self.cropped_dir_path)
+		
 		for ncnt, cnt in enumerate(cnts):
 			self.update_progress("Cropping table", ncnt, len(cnts))
 			# Returns the location and width,height for every contour
 			x, y, w, h = cv2.boundingRect(cnt)
-			new_img = image[y:y+h, x:x+w]
-			cv2.imwrite(cropped_dir_path+str(ncnt)+'.jpg',new_img)
+			new_img = self.image[y:y+h, x:x+w]
+			crop_img_filename = os.path.join(self.cropped_dir_path, "crop_{}.jpg".format(ncnt))
+			cv2.imwrite(crop_img_filename, new_img)
 				 

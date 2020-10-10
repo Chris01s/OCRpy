@@ -21,7 +21,8 @@ class ImageMagick(PDFExtract):
 		self.run_subprocess(cmd)
 	
 	def move_separate_images_to_temp_folder(self):
-		self.temp_folder = self.filepath.replace(".pdf","_imgs")
+		file_ext = os.path.basename(self.filepath).split(".")[-1]
+		self.temp_folder = self.filepath.replace("."+file_ext,"_imgs")
 		self.create_folders_if_not_exist(self.temp_folder)
 		self.move_file(src="output*.jpg", dst=self.temp_folder)
 	

@@ -5,6 +5,7 @@ import time
 import shutil
 import subprocess
 import cv2
+import string
 from PIL import Image
 
 
@@ -55,11 +56,16 @@ class System:
 		filename = filename.replace(" ","_")
 		for punct in string.punctuation:
 			if punct in ".":
+				continue
+			else:
 				filename = filename.replace(punct, "_")
 		new_filepath = os.path.join(directory, filename)
-		self.move_file(filepath, new_filepath)
-		print(f"[*] filename Changed...")
-		return new_filepath
+		if new_filepath == filepath:
+			return new_filepath
+		else:
+			self.move_file(filepath, new_filepath)
+			print(f"[*] filename Changed...")
+			return new_filepath
 		     
 		     
 	def create_folders_if_not_exist(self, dir_name):
@@ -76,6 +82,15 @@ class System:
 				raise Exception(f"Couldn't move {src} to {dst}")
 		except Exception as ex:
 			print(f"[!!] {ex.__str__()}")
+			shutil.move(src, dst)
+			
+	def copy_file(self, src, dst):
+		try:
+			if os.system(f'cp {src} {dst}'):
+				raise Exception(f"Couldn't move {src} to {dst}")
+		except Exception as ex:
+			print(f"[!!] {ex.__str__()}")
+			shutil.copy(src, dst)
 			
 	
 	def delete_file(self, src):
