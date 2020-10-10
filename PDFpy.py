@@ -1,13 +1,12 @@
 import re
 from glob import glob
 import subprocess
-from system_class import System
+from CorePackage.system_class import System
 
 
 
 class PDFExtract(System):
 	def get_full_text(self, filepath, form="-raw", output="full_text.txt"):
-		 print("[*] Extracting full document raw...")
 		 extract_text_cmd = r"""{} "{}" "{}" "{}" -enc UTF-8""".format('pdftotext', form, filepath, output)
 		 self.run_subprocess(extract_text_cmd)
 		 full_text = self.read_text(output)
@@ -43,6 +42,7 @@ class PDFExtract(System):
 			self.update_progress("PDF text extraction", npage, len(seperate_pages))
 		##move all pages to temp folder
 		self.move_file("output*.*", self.temp_folder)
+		self.move_file("full_text.txt", self.temp_folder)
 		print("[+] Extracted text sitting in {}".format(self.temp_folder))
 		
 	
