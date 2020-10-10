@@ -7,12 +7,14 @@ import pytesseract
 import sys
 import string
 
-from clean_img import CleanImg
+from CorePackage.clean_img import CleanImg
 
 
 class MaxVariance(CleanImg):
 	def __init__(self, image):
-		CleanImg.__init__(self, image)
+		CleanImg.__init__(self)
+		self.image = image
+
 	
 	def detect_english(self, text):
 		char_freq = []
@@ -21,13 +23,16 @@ class MaxVariance(CleanImg):
 		max_char_count = max(char_freq)
 		return char_freq.index(max_char_count) == 'e'
 
+
 	def find_max_variance(self, start_angle, end_angle, step, thresh):
 		maxes = []
 		variances = []
 		angles = np.arange(start_angle, end_angle, step)
 		print_line = "[+] Rotating image by "
+		
 		for i in angles:
-			image_rotated = imutils.rotate_bound(thresh, i)
+			image_rotated = imutils.rotate_bound(self.img_bin, i)
+			
 			print(print_line+str(i),end='')
 			print('\b' * len(print_line+str(i)), end='', flush=True)
 			
@@ -111,14 +116,15 @@ class MaxVariance(CleanImg):
 
 if __name__=="__main__":
 	if len(sys.argv) < 2:
-		print("Usage: python deskew_image.py <image.png>")
+		print("Usage: python maximum_variance_method.py <image.png>")
 		sys.exit()
 	
+	print(f"[+] Deskewing {sys.argv[1]}")
 	image = cv2.imread(sys.argv[1])
 
 	max_var_obj = MaxVariance(image)
 	
-	max_var_obj.grayscale()
+	max_var_obj.grayscale(image)
 	max_var_obj.bitwise()
 	max_var_obj.applyThreshold()
 	

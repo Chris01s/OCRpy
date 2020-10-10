@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pytesseract
 import imutils
-from clean_img import CleanImg
+from CorePackage.clean_img import CleanImg
 
 class BoundingBox(CleanImg):
 	def __init__(self, image):
